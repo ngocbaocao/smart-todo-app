@@ -3,50 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart To-Do App</title>
-  <!-- Tailwind CSS cho giao diện đẹp -->
+  <title>Handwritten To-Do App</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts - Indie Flower cho phong cách vẽ tay -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+  <style>
+    /* Cấu hình phông chữ vẽ tay mặc định cho toàn bộ trang */
+    body {
+      font-family: 'Indie Flower', cursive;
+      color: #5e4b3e; /* Màu nâu sẫm cho tất cả văn bản */
+    }
+    /* Khung "TO DO" vẽ tay */
+    .doodle-box {
+      border: 4px solid #5e4b3e; /* Màu nâu sẫm */
+      border-radius: 16px;
+      padding: 12px 24px;
+      display: inline-block;
+      font-size: 2.2rem;
+      font-weight: bold;
+    }
+    /* Phong cách ô vuông checkbox vẽ tay */
+    .checkbox-doodle {
+      width: 28px;
+      height: 28px;
+      border: 4px solid #5e4b3e; /* Màu nâu sẫm */
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    /* Trạng thái đã tick của checkbox vẽ tay */
+    .checkbox-doodle-checked {
+      background-color: #5e4b3e; /* Màu nâu sẫm */
+    }
+    /* Icon dấu tích trắng */
+    .checkbox-doodle-icon {
+      color: white;
+      font-size: 1.2rem;
+    }
+    /* Các đường kẻ ngang cho nội dung công việc */
+    .task-lines {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .task-line {
+      border-bottom: 3px solid #5e4b3e; /* Màu nâu sẫm */
+      width: 100%;
+      height: 24px; /* Khoảng cách giữa các dòng */
+    }
+  </style>
 </head>
-<body class="bg-slate-100 min-h-screen py-10 px-4 font-sans">
-  <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+<body class="bg-[#f8cf89] min-h-screen py-10 px-4">
+  <div class="max-w-md mx-auto bg-[#fdf8f0] rounded-[32px] p-8 shadow-xl relative overflow-hidden">
     
-    <!-- Header -->
-    <div class="bg-indigo-600 p-6 text-white text-center">
-      <h1 class="text-2xl font-bold tracking-wide">📝 Smart To-Do App</h1>
-      <p class="text-indigo-200 text-sm mt-1">Tự động thông báo qua Telegram</p>
+    <!-- Header vẽ tay -->
+    <div class="flex justify-between items-start mb-10">
+      <div class="doodle-box">
+        TO DO
+      </div>
+      <div class="w-24 h-32 flex justify-end">
+        <!-- SVG lọ hoa vẽ tay ấm áp -->
+        <svg viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="50" cy="110" rx="30" ry="30" fill="#a9d9e6"/>
+          <rect x="30" y="80" width="40" height="60" fill="#fdf8f0"/>
+          <circle cx="85" cy="15" r="5" fill="#f4d03f"/>
+          <path d="M85 20V40" stroke="#5e4b3e" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="90" cy="10" r="5" fill="#f4d03f"/>
+          <path d="M90 15V35" stroke="#5e4b3e" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="80" cy="10" r="5" fill="#f4d03f"/>
+          <path d="M80 15V35" stroke="#5e4b3e" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
     </div>
 
-    <!-- Form nhập công việc -->
-    <div class="p-6">
-      <form id="taskForm" class="flex gap-2 mb-6">
-        <input 
-          type="text" 
-          id="taskInput" 
-          placeholder="Nhập công việc cần làm..." 
-          required
-          class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-        />
-        <button 
-          type="submit" 
-          class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold transition flex items-center gap-1"
-        >
-          <i class="fa-solid fa-plus"></i> Thêm
-        </button>
-      </form>
+    <!-- Form nhập công việc vẽ tay -->
+    <form id="taskForm" class="flex gap-2 mb-8">
+      <input 
+        type="text" 
+        id="taskInput" 
+        placeholder="Nhập công việc..." 
+        required
+        class="flex-1 px-4 py-3 border-2 border-[#5e4b3e] bg-[#fdf8f0] text-[#5e4b3e] rounded-[16px] focus:outline-none focus:ring-2 focus:ring-[#5e4b3e] transition placeholder-[#a0aec0]"
+      />
+      <button 
+        type="submit" 
+        class="bg-[#5e4b3e] hover:bg-[#4a3a2d] text-white px-5 py-3 rounded-[16px] font-semibold transition flex items-center gap-1"
+      >
+        <i class="fa-solid fa-plus"></i> Thêm
+      </button>
+    </form>
 
-      <!-- Danh sách công việc -->
-      <ul id="taskList" class="space-y-3">
-        <li class="text-center text-gray-400 py-4">Đang tải danh sách...</li>
-      </ul>
+    <!-- Danh sách công việc vẽ tay -->
+    <ul id="taskList" class="space-y-4">
+      <li class="text-center text-gray-400 py-4">Đang tải danh sách...</li>
+    </ul>
+
+    <!-- Footer - Đám mây vẽ tay -->
+    <div class="flex justify-center gap-4 mt-12 mb-[-16px]">
+      <!-- SVG đám mây vẽ tay đơn giản -->
+      <svg viewBox="0 0 100 50" class="w-12 h-6" fill="#5e4b3e">
+        <path d="M10 30C10 20 20 10 30 10C35 10 40 12 43 15C45 10 50 10 55 10C65 10 70 20 70 30H10Z"/>
+      </svg>
+      <svg viewBox="0 0 100 50" class="w-12 h-6" fill="#5e4b3e">
+        <path d="M10 30C10 20 20 10 30 10C35 10 40 12 43 15C45 10 50 10 55 10C65 10 70 20 70 30H10Z"/>
+      </svg>
+      <svg viewBox="0 0 100 50" class="w-12 h-6" fill="#5e4b3e">
+        <path d="M10 30C10 20 20 10 30 10C35 10 40 12 43 15C45 10 50 10 55 10C65 10 70 20 70 30H10Z"/>
+      </svg>
     </div>
   </div>
 
   <script>
+    // URL API Backend (Mặc định cho môi trường Render)
     const API_URL = '/api/tasks';
 
-    // 1. Tải danh sách công việc từ Backend
+    // 1. Tải danh sách công việc
     async function fetchTasks() {
       try {
         const res = await fetch(API_URL);
@@ -54,7 +132,7 @@
         renderTasks(tasks);
       } catch (err) {
         document.getElementById('taskList').innerHTML = `
-          <li class="text-center text-red-500 py-4">❌ Không thể kết nối tới Server Backend!</li>
+          <li class="text-center text-red-500 py-4">❌ Lỗi kết nối Backend!</li>
         `;
       }
     }
@@ -63,28 +141,35 @@
     function renderTasks(tasks) {
       const listEl = document.getElementById('taskList');
       if (tasks.length === 0) {
-        listEl.innerHTML = '<li class="text-center text-gray-400 py-4">Chưa có công việc nào. Hãy thêm mới!</li>';
+        listEl.innerHTML = '<li class="text-center text-gray-400 py-4">Chưa có công việc nào.</li>';
         return;
       }
 
       listEl.innerHTML = tasks.map(task => `
-        <li class="flex items-center justify-between p-3 rounded-xl border ${task.isCompleted ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'} transition">
-          <div class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTask('${task._id}')">
-            <input 
-              type="checkbox" 
-              ${task.isCompleted ? 'checked' : ''} 
-              class="w-5 h-5 text-indigo-600 rounded focus:ring-0 cursor-pointer"
-            />
-            <span class="${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700 font-medium'}">
+        <li class="flex items-start gap-4 p-4 rounded-xl transition">
+          <!-- Ô vuông checkbox vẽ tay -->
+          <div 
+            class="checkbox-doodle ${task.isCompleted ? 'checkbox-doodle-checked' : ''}" 
+            onclick="toggleTask('${task._id}')"
+          >
+            ${task.isCompleted ? '<i class="fa-solid fa-check checkbox-doodle-icon"></i>' : ''}
+          </div>
+          <!-- Nội dung công việc với đường kẻ ngang -->
+          <div class="task-lines" onclick="toggleTask('${task._id}')">
+            <span class="text-xl ${task.isCompleted ? 'line-through text-gray-400' : 'text-[#5e4b3e]'}" style="width: 100%; display: inline-block;">
               ${task.title}
             </span>
+            <div class="task-line"></div>
+            <div class="task-line"></div>
+            <div class="task-line"></div>
           </div>
+          <!-- Nút xóa vẽ tay -->
           <button 
             onclick="deleteTask('${task._id}')" 
-            class="text-gray-400 hover:text-red-500 p-2 transition"
+            class="text-[#5e4b3e] hover:text-red-500 p-2 transition mt-[-8px]"
             title="Xóa"
           >
-            <i class="fa-solid fa-trash-can"></i>
+            <i class="fa-solid fa-trash-can text-lg"></i>
           </button>
         </li>
       `).join('');
@@ -107,7 +192,7 @@
       fetchTasks();
     });
 
-    // 4. Tick hoàn thành (Sẽ kích hoạt tin nhắn Telegram)
+    // 4. Tick hoàn thành (Kích hoạt Telegram)
     async function toggleTask(id) {
       await fetch(`${API_URL}/${id}/toggle`, { method: 'PATCH' });
       fetchTasks();
