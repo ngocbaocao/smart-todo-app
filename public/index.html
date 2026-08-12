@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart To-Do App</title>
+  <!-- Tailwind CSS cho giao diện đẹp -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 min-h-screen py-10 px-4 font-sans">
+  <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+    
+    <!-- Header -->
+    <div class="bg-indigo-600 p-6 text-white text-center">
+      <h1 class="text-2xl font-bold tracking-wide">📝 Smart To-Do App</h1>
+      <p class="text-indigo-200 text-sm mt-1">Tự động thông báo qua Telegram</p>
+    </div>
+
+    <!-- Form nhập công việc -->
+    <div class="p-6">
+      <form id="taskForm" class="flex gap-2 mb-6">
+        <input 
+          type="text" 
+          id="taskInput" 
+          placeholder="Nhập công việc cần làm..." 
+          required
+          class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+        />
+        <button 
+          type="submit" 
+          class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold transition flex items-center gap-1"
+        >
+          <i class="fa-solid fa-plus"></i> Thêm
+        </button>
+      </form>
+
+      <!-- Danh sách công việc -->
+      <ul id="taskList" class="space-y-3">
+        <li class="text-center text-gray-400 py-4">Đang tải danh sách...</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = '/api/tasks';
+
+    // 1. Tải danh sách công việc từ Backend
+    async function fetchTasks() {
+      try {
+        const res = await fetch(API_URL);
+        const tasks = await res.json();
+        renderTasks(tasks);
+      } catch (err) {
+        document.getElementById('taskList').innerHTML = `
+          <li class="text-center text-red-500 py-4">❌ Không thể kết nối tới Server Backend!</li>
+        `;
+      }
+    }
+
+    // 2. Hiển thị danh sách lên màn hình
+    function renderTasks(tasks) {
+      const listEl = document.getElementById('taskList');
+      if (tasks.length === 0) {
+        listEl.innerHTML = '<li class="text-center text-gray-400 py-4">Chưa có công việc nào. Hãy thêm mới!</li>';
+        return;
+      }
+
+      listEl.innerHTML = tasks.map(task => `
+        <li class="flex items-center justify-between p-3 rounded-xl border ${task.isCompleted ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'} transition">
+          <div class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTask('${task._id}')">
+            <input 
+              type="checkbox" 
+              ${task.isCompleted ? 'checked' : ''} 
+              class="w-5 h-5 text-indigo-600 rounded focus:ring-0 cursor-pointer"
+            />
+            <span class="${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700 font-medium'}">
+              ${task.title}
+            </span>
+          </div>
+          <button 
+            onclick="deleteTask('${task._id}')" 
+            class="text-gray-400 hover:text-red-500 p-2 transition"
+            title="Xóa"
+          >
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </li>
+      `).join('');
+    }
+
+    // 3. Thêm công việc mới
+    document.getElementById('taskForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('taskInput');
+      const title = input.value.trim();
+      if (!title) return;
+
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
+      });
+
+      input.value = '';
+      fetchTasks();
+    });
+
+    // 4. Tick hoàn thành (Sẽ kích hoạt tin nhắn Telegram)
+    async function toggleTask(id) {
+      await fetch(`${API_URL}/${id}/toggle`, { method: 'PATCH' });
+      fetchTasks();
+    }
+
+    // 5. Xóa công việc
+    async function deleteTask(id) {
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      fetchTasks();
+    }
+
+    // Tải dữ liệu khi mở trang
+    fetchTasks();
+  </script>
+</body>
+</html>
