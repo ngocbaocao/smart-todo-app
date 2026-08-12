@@ -3,29 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aesthetic To-Do List</title>
-  <!-- Tailwind CSS -->
+  <title>Aesthetic Calendar To-Do List</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts - Patrick Hand cho phông chữ viết tay tối giản -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
   
   <style>
-    /* Phông chữ viết tay & màu nền tổng thể */
     body {
       font-family: 'Patrick Hand', cursive;
       background-color: #f3efe6;
       color: #1a1a1a;
     }
 
-    /* Hiệu ứng gáy tập giấy 3D ở góc trái và đáy */
+    /* Khung sổ tay 3D */
     .notepad-card {
       background-color: #fbf9f4;
       border: 2px solid #1a1a1a;
-      border-radius: 12px;
+      border-radius: 16px;
       box-shadow: 
         -4px 4px 0px 0px #fbf9f4,
         -4px 4px 0px 2px #1a1a1a,
@@ -33,7 +29,7 @@
         -8px 8px 0px 2px #1a1a1a;
     }
 
-    /* Ô vuông checkbox nét vẽ tối giản */
+    /* Ô checkbox nét vẽ */
     .checkbox-custom {
       width: 22px;
       height: 22px;
@@ -52,50 +48,107 @@
       background-color: #1a1a1a;
     }
 
-    /* Đường kẻ ngang thanh lịch cho mỗi dòng công việc */
+    /* Dòng kẻ ngang công việc */
     .task-row {
       border-bottom: 1.5px solid #dcd7cd;
     }
+
+    /* Tab ngày trong tuần */
+    .day-tab {
+      border: 1.5px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 4px 0;
+      text-align: center;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+      background-color: transparent;
+    }
+
+    .day-tab-active {
+      background-color: #1a1a1a;
+      color: #fbf9f4;
+    }
+
+    /* Dropdown định dạng tối giản */
+    .select-custom {
+      background: transparent;
+      border: 1.5px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 1.1rem;
+      outline: none;
+      cursor: pointer;
+    }
   </style>
 </head>
-<body class="min-h-screen py-10 px-4 flex justify-center items-center">
+<body class="min-h-screen py-6 px-3 flex justify-center items-center">
 
-  <div class="w-full max-w-md notepad-card p-6 sm:p-8 my-4">
+  <div class="w-full max-w-md notepad-card p-5 sm:p-7 my-2">
     
-    <!-- Họa tiết Header: Thanh ngang & Ngôi sao ✦ -->
-    <div class="flex items-center justify-center gap-2 mb-3 text-[#1a1a1a]">
-      <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[60px]"></div>
+    <!-- Header Họa tiết -->
+    <div class="flex items-center justify-center gap-2 mb-2 text-[#1a1a1a]">
+      <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[50px]"></div>
       <span class="text-xs">●</span>
       <span class="text-sm">✦</span>
       <span class="text-lg">✦</span>
       <span class="text-sm">✦</span>
       <span class="text-xs">●</span>
-      <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[60px]"></div>
+      <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[50px]"></div>
     </div>
 
-    <!-- Tiêu đề "TO DO LIST" -->
-    <h1 class="text-3xl font-bold text-center tracking-[0.25em] mb-6 uppercase text-[#1a1a1a]">
+    <!-- Tiêu đề -->
+    <h1 class="text-2xl font-bold text-center tracking-[0.2em] mb-4 uppercase text-[#1a1a1a]">
       T O &nbsp; D O &nbsp; L I S T
     </h1>
 
-    <!-- Form nhập công việc -->
-    <form id="taskForm" class="flex gap-2 mb-6">
+    <!-- Bộ chọn THÁNG & TUẦN -->
+    <div class="flex justify-between items-center gap-2 mb-4 bg-[#f3efe6] p-2.5 rounded-xl border border-[#1a1a1a]">
+      <div class="flex items-center gap-1">
+        <span class="text-lg font-bold">Tháng:</span>
+        <select id="monthSelect" class="select-custom" onchange="onMonthOrWeekChange()"></select>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <span class="text-lg font-bold">Tuần:</span>
+        <select id="weekSelect" class="select-custom" onchange="onMonthOrWeekChange()">
+          <option value="0">Tuần 1</option>
+          <option value="1">Tuần 2</option>
+          <option value="2">Tuần 3</option>
+          <option value="3">Tuần 4</option>
+          <option value="4">Tuần 5</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Thanh 7 Ngày Trong Tuần (Thứ 2 - CN) -->
+    <div id="daysContainer" class="grid grid-cols-7 gap-1 mb-3">
+      <!-- Sẽ được render động bằng JavaScript -->
+    </div>
+
+    <!-- Dòng hiển thị Ngày/Tháng/Năm thực tế -->
+    <div class="text-center text-lg font-bold text-[#1a1a1a] mb-5 border-b border-[#1a1a1a] pb-2">
+      📅 <span id="fullDateLabel">Đang tải ngày...</span>
+    </div>
+
+    <!-- Form Nhập Công Việc -->
+    <form id="taskForm" class="flex gap-2 mb-5">
       <input 
         type="text" 
         id="taskInput" 
-        placeholder="Viết công việc mới..." 
+        placeholder="Viết công việc cho ngày này..." 
         required
-        class="flex-1 px-3 py-1.5 bg-transparent border-b-2 border-[#1a1a1a] focus:outline-none text-xl placeholder-[#9e9689]"
+        class="flex-1 px-3 py-1 bg-transparent border-b-2 border-[#1a1a1a] focus:outline-none text-xl placeholder-[#9e9689]"
       />
       <button 
         type="submit" 
-        class="border-2 border-[#1a1a1a] px-4 py-1 rounded-lg text-lg font-bold hover:bg-[#1a1a1a] hover:text-[#fbf9f4] transition"
+        class="border-2 border-[#1a1a1a] px-3 py-1 rounded-lg text-lg font-bold hover:bg-[#1a1a1a] hover:text-[#fbf9f4] transition"
       >
         + Thêm
       </button>
     </form>
 
-    <!-- Danh sách công việc -->
+    <!-- Danh Sách Công Việc -->
     <ul id="taskList" class="space-y-1">
       <li class="text-center text-gray-400 py-4 text-xl">Đang tải danh sách...</li>
     </ul>
@@ -104,11 +157,128 @@
 
   <script>
     const API_URL = '/api/tasks';
+    const dayNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const fullDayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 
-    // 1. Tải danh sách công việc
+    let currentDateState = new Date(); // Thời gian đang chọn
+    let currentWeekDays = []; // Mảng chứa 7 Date objects của tuần hiện tại
+    let selectedDayIndex = 0; // Mặc định chọn Thứ 2 (index 0)
+
+    // Khởi tạo ứng dụng
+    function initApp() {
+      populateMonths();
+      setSelectsToDate(currentDateState);
+      updateWeekAndDays();
+      
+      // Chọn ngày hôm nay nếu trùng trong tuần, không thì chọn T2
+      const today = new Date();
+      const matchIndex = currentWeekDays.findIndex(d => isSameDate(d, today));
+      selectedDayIndex = matchIndex !== -1 ? matchIndex : 0;
+
+      renderDayTabs();
+      fetchTasks();
+    }
+
+    // Tạo danh sách 12 Tháng
+    function populateMonths() {
+      const monthSelect = document.getElementById('monthSelect');
+      monthSelect.innerHTML = '';
+      for (let i = 0; i < 12; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Thg ${i + 1}`;
+        monthSelect.appendChild(opt);
+      }
+    }
+
+    // Đồng bộ Dropdown Month/Week theo Date
+    function setSelectsToDate(date) {
+      document.getElementById('monthSelect').value = date.getMonth();
+      // Tính tuần tương đối trong tháng (0-4)
+      const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+      const weekIndex = Math.floor((date.getDate() + firstDayOfMonth.getDay() - 1) / 7);
+      document.getElementById('weekSelect').value = Math.min(weekIndex, 4);
+    }
+
+    // Tính toán mảng 7 ngày của Tuần được chọn
+    function updateWeekAndDays() {
+      const year = currentDateState.getFullYear();
+      const month = parseInt(document.getElementById('monthSelect').value);
+      const weekIndex = parseInt(document.getElementById('weekSelect').value);
+
+      // Ngày đầu tiên của tuần (Thứ 2)
+      const firstOfMonth = new Date(year, month, 1);
+      let dayOfWeek = firstOfMonth.getDay(); // 0 (CN) -> 6 (T7)
+      let diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+
+      let mondayOfWeek1 = new Date(year, month, 1 + diffToMonday);
+      let targetMonday = new Date(mondayOfWeek1);
+      targetMonday.setDate(mondayOfWeek1.getDate() + (weekIndex * 7));
+
+      currentWeekDays = [];
+      for (let i = 0; i < 7; i++) {
+        let d = new Date(targetMonday);
+        d.setDate(targetMonday.getDate() + i);
+        currentWeekDays.push(d);
+      }
+    }
+
+    // Khi người dùng thay đổi Tháng hoặc Tuần
+    function onMonthOrWeekChange() {
+      const month = parseInt(document.getElementById('monthSelect').value);
+      currentDateState.setMonth(month);
+      updateWeekAndDays();
+      renderDayTabs();
+      fetchTasks();
+    }
+
+    // Render 7 nút bấm đại diện Thứ 2 -> CN
+    function renderDayTabs() {
+      const container = document.getElementById('daysContainer');
+      container.innerHTML = '';
+
+      currentWeekDays.forEach((dateObj, idx) => {
+        const tab = document.createElement('div');
+        tab.className = `day-tab ${idx === selectedDayIndex ? 'day-tab-active' : ''}`;
+        tab.innerHTML = `
+          <div class="text-xs">${dayNames[idx]}</div>
+          <div class="text-sm">${dateObj.getDate()}</div>
+        `;
+        tab.onclick = () => selectDay(idx);
+        container.appendChild(tab);
+      });
+
+      // Cập nhật Dòng hiển thị Ngày/Tháng/Năm đầy đủ
+      const activeDate = currentWeekDays[selectedDayIndex];
+      const dayNameFull = fullDayNames[activeDate.getDay()];
+      const dd = String(activeDate.getDate()).padStart(2, '0');
+      const mm = String(activeDate.getMonth() + 1).padStart(2, '0');
+      const yyyy = activeDate.getFullYear();
+
+      document.getElementById('fullDateLabel').textContent = `${dayNameFull}, ${dd}/${mm}/${yyyy}`;
+    }
+
+    // Chọn ngày trong tuần
+    function selectDay(index) {
+      selectedDayIndex = index;
+      renderDayTabs();
+      fetchTasks();
+    }
+
+    // Chuyển Date object thành chuỗi "YYYY-MM-DD"
+    function getSelectedDateString() {
+      const activeDate = currentWeekDays[selectedDayIndex];
+      const yyyy = activeDate.getFullYear();
+      const mm = String(activeDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(activeDate.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // Tải danh sách công việc của Ngày đang chọn từ Backend
     async function fetchTasks() {
+      const dateStr = getSelectedDateString();
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(`${API_URL}?date=${dateStr}`);
         const tasks = await res.json();
         renderTasks(tasks);
       } catch (err) {
@@ -118,17 +288,16 @@
       }
     }
 
-    // 2. Hiển thị danh sách
+    // Hiển thị công việc
     function renderTasks(tasks) {
       const listEl = document.getElementById('taskList');
       if (tasks.length === 0) {
-        listEl.innerHTML = '<li class="text-center text-gray-400 py-6 text-xl">Chưa có công việc nào.</li>';
+        listEl.innerHTML = '<li class="text-center text-gray-400 py-6 text-xl">Không có việc nào cho ngày này.</li>';
         return;
       }
 
       listEl.innerHTML = tasks.map(task => `
         <li class="flex items-center gap-3 py-2.5 task-row group">
-          <!-- Ô Checkbox -->
           <div 
             class="checkbox-custom ${task.isCompleted ? 'checkbox-custom-checked' : ''}" 
             onclick="toggleTask('${task._id}')"
@@ -136,7 +305,6 @@
             ${task.isCompleted ? '<i class="fa-solid fa-check text-white text-xs"></i>' : ''}
           </div>
           
-          <!-- Nội dung công việc -->
           <span 
             onclick="toggleTask('${task._id}')"
             class="flex-1 text-xl cursor-pointer select-none ${task.isCompleted ? 'line-through text-gray-400' : 'text-[#1a1a1a]'}"
@@ -144,7 +312,6 @@
             ${task.title}
           </span>
 
-          <!-- Nút xóa -->
           <button 
             onclick="deleteTask('${task._id}')" 
             class="text-gray-400 hover:text-red-600 p-1 transition opacity-70 group-hover:opacity-100"
@@ -156,37 +323,45 @@
       `).join('');
     }
 
-    // 3. Thêm công việc mới
+    // Thêm công việc vào Ngày đang chọn
     document.getElementById('taskForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const input = document.getElementById('taskInput');
       const title = input.value.trim();
       if (!title) return;
 
+      const date = getSelectedDateString();
+
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title })
+        body: JSON.stringify({ title, date })
       });
 
       input.value = '';
       fetchTasks();
     });
 
-    // 4. Tick hoàn thành (Báo Telegram)
+    // Tick hoàn thành công việc
     async function toggleTask(id) {
       await fetch(`${API_URL}/${id}/toggle`, { method: 'PATCH' });
       fetchTasks();
     }
 
-    // 5. Xóa công việc
+    // Xóa công việc
     async function deleteTask(id) {
       await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
       fetchTasks();
     }
 
-    // Khởi chạy khi mở trang
-    fetchTasks();
+    function isSameDate(d1, d2) {
+      return d1.getFullYear() === d2.getFullYear() &&
+             d1.getMonth() === d2.getMonth() &&
+             d1.getDate() === d2.getDate();
+    }
+
+    // Chạy khi tải trang
+    initApp();
   </script>
 </body>
 </html>
