@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aesthetic Calendar To-Do List</title>
+  <title>Habit & Work Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -88,18 +88,18 @@
     
     <!-- Header Họa tiết -->
     <div class="flex items-center justify-center gap-2 mb-2 text-[#1a1a1a]">
-      <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[50px]"></div>
+      <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[40px]"></div>
       <span class="text-xs">●</span>
       <span class="text-sm">✦</span>
       <span class="text-lg">✦</span>
       <span class="text-sm">✦</span>
       <span class="text-xs">●</span>
-      <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[50px]"></div>
+      <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[40px]"></div>
     </div>
 
-    <!-- Tiêu đề -->
-    <h1 class="text-2xl font-bold text-center tracking-[0.2em] mb-4 uppercase text-[#1a1a1a]">
-      T O &nbsp; D O &nbsp; L I S T
+    <!-- Tên ứng dụng mới -->
+    <h1 class="text-2xl font-bold text-center tracking-[0.1em] mb-4 uppercase text-[#1a1a1a]">
+      HABIT & WORK TRACKER
     </h1>
 
     <!-- Bộ chọn THÁNG & TUẦN -->
@@ -122,9 +122,7 @@
     </div>
 
     <!-- Thanh 7 Ngày Trong Tuần (Thứ 2 - CN) -->
-    <div id="daysContainer" class="grid grid-cols-7 gap-1 mb-3">
-      <!-- Sẽ được render động bằng JavaScript -->
-    </div>
+    <div id="daysContainer" class="grid grid-cols-7 gap-1 mb-3"></div>
 
     <!-- Dòng hiển thị Ngày/Tháng/Năm thực tế -->
     <div class="text-center text-lg font-bold text-[#1a1a1a] mb-5 border-b border-[#1a1a1a] pb-2">
@@ -136,7 +134,7 @@
       <input 
         type="text" 
         id="taskInput" 
-        placeholder="Viết công việc cho ngày này..." 
+        placeholder="Viết công việc/thói quen..." 
         required
         class="flex-1 px-3 py-1 bg-transparent border-b-2 border-[#1a1a1a] focus:outline-none text-xl placeholder-[#9e9689]"
       />
@@ -160,17 +158,15 @@
     const dayNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
     const fullDayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 
-    let currentDateState = new Date(); // Thời gian đang chọn
-    let currentWeekDays = []; // Mảng chứa 7 Date objects của tuần hiện tại
-    let selectedDayIndex = 0; // Mặc định chọn Thứ 2 (index 0)
+    let currentDateState = new Date();
+    let currentWeekDays = [];
+    let selectedDayIndex = 0;
 
-    // Khởi tạo ứng dụng
     function initApp() {
       populateMonths();
       setSelectsToDate(currentDateState);
       updateWeekAndDays();
       
-      // Chọn ngày hôm nay nếu trùng trong tuần, không thì chọn T2
       const today = new Date();
       const matchIndex = currentWeekDays.findIndex(d => isSameDate(d, today));
       selectedDayIndex = matchIndex !== -1 ? matchIndex : 0;
@@ -179,7 +175,6 @@
       fetchTasks();
     }
 
-    // Tạo danh sách 12 Tháng
     function populateMonths() {
       const monthSelect = document.getElementById('monthSelect');
       monthSelect.innerHTML = '';
@@ -191,24 +186,20 @@
       }
     }
 
-    // Đồng bộ Dropdown Month/Week theo Date
     function setSelectsToDate(date) {
       document.getElementById('monthSelect').value = date.getMonth();
-      // Tính tuần tương đối trong tháng (0-4)
       const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
       const weekIndex = Math.floor((date.getDate() + firstDayOfMonth.getDay() - 1) / 7);
       document.getElementById('weekSelect').value = Math.min(weekIndex, 4);
     }
 
-    // Tính toán mảng 7 ngày của Tuần được chọn
     function updateWeekAndDays() {
       const year = currentDateState.getFullYear();
       const month = parseInt(document.getElementById('monthSelect').value);
       const weekIndex = parseInt(document.getElementById('weekSelect').value);
 
-      // Ngày đầu tiên của tuần (Thứ 2)
       const firstOfMonth = new Date(year, month, 1);
-      let dayOfWeek = firstOfMonth.getDay(); // 0 (CN) -> 6 (T7)
+      let dayOfWeek = firstOfMonth.getDay();
       let diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
 
       let mondayOfWeek1 = new Date(year, month, 1 + diffToMonday);
@@ -223,7 +214,6 @@
       }
     }
 
-    // Khi người dùng thay đổi Tháng hoặc Tuần
     function onMonthOrWeekChange() {
       const month = parseInt(document.getElementById('monthSelect').value);
       currentDateState.setMonth(month);
@@ -232,7 +222,6 @@
       fetchTasks();
     }
 
-    // Render 7 nút bấm đại diện Thứ 2 -> CN
     function renderDayTabs() {
       const container = document.getElementById('daysContainer');
       container.innerHTML = '';
@@ -248,7 +237,6 @@
         container.appendChild(tab);
       });
 
-      // Cập nhật Dòng hiển thị Ngày/Tháng/Năm đầy đủ
       const activeDate = currentWeekDays[selectedDayIndex];
       const dayNameFull = fullDayNames[activeDate.getDay()];
       const dd = String(activeDate.getDate()).padStart(2, '0');
@@ -258,14 +246,12 @@
       document.getElementById('fullDateLabel').textContent = `${dayNameFull}, ${dd}/${mm}/${yyyy}`;
     }
 
-    // Chọn ngày trong tuần
     function selectDay(index) {
       selectedDayIndex = index;
       renderDayTabs();
       fetchTasks();
     }
 
-    // Chuyển Date object thành chuỗi "YYYY-MM-DD"
     function getSelectedDateString() {
       const activeDate = currentWeekDays[selectedDayIndex];
       const yyyy = activeDate.getFullYear();
@@ -274,7 +260,6 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // Tải danh sách công việc của Ngày đang chọn từ Backend
     async function fetchTasks() {
       const dateStr = getSelectedDateString();
       try {
@@ -288,11 +273,10 @@
       }
     }
 
-    // Hiển thị công việc
     function renderTasks(tasks) {
       const listEl = document.getElementById('taskList');
       if (tasks.length === 0) {
-        listEl.innerHTML = '<li class="text-center text-gray-400 py-6 text-xl">Không có việc nào cho ngày này.</li>';
+        listEl.innerHTML = '<li class="text-center text-gray-400 py-6 text-xl">Chưa có thói quen / công việc nào.</li>';
         return;
       }
 
@@ -323,7 +307,6 @@
       `).join('');
     }
 
-    // Thêm công việc vào Ngày đang chọn
     document.getElementById('taskForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const input = document.getElementById('taskInput');
@@ -342,13 +325,11 @@
       fetchTasks();
     });
 
-    // Tick hoàn thành công việc
     async function toggleTask(id) {
       await fetch(`${API_URL}/${id}/toggle`, { method: 'PATCH' });
       fetchTasks();
     }
 
-    // Xóa công việc
     async function deleteTask(id) {
       await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
       fetchTasks();
@@ -360,7 +341,6 @@
              d1.getDate() === d2.getDate();
     }
 
-    // Chạy khi tải trang
     initApp();
   </script>
 </body>
