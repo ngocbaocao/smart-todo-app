@@ -17,7 +17,6 @@
       color: #1a1a1a;
     }
 
-    /* Khung sổ tay 3D */
     .notepad-card {
       background-color: #fbf9f4;
       border: 2px solid #1a1a1a;
@@ -29,7 +28,6 @@
         -8px 8px 0px 2px #1a1a1a;
     }
 
-    /* Ô checkbox nét vẽ */
     .checkbox-custom {
       width: 22px;
       height: 22px;
@@ -48,12 +46,10 @@
       background-color: #1a1a1a;
     }
 
-    /* Dòng kẻ ngang công việc */
     .task-row {
       border-bottom: 1.5px solid #dcd7cd;
     }
 
-    /* Tab ngày trong tuần */
     .day-tab {
       border: 1.5px solid #1a1a1a;
       border-radius: 8px;
@@ -70,7 +66,6 @@
       color: #fbf9f4;
     }
 
-    /* Dropdown định dạng tối giản */
     .select-custom {
       background: transparent;
       border: 1.5px solid #1a1a1a;
@@ -153,7 +148,7 @@
 
   </div>
 
-  <!-- POPUP CÀI ĐẶT 3 CHẤM (Chỉnh sửa tên & Đánh dấu Ưu tiên) -->
+  <!-- POPUP CÀI ĐẶT 3 CHẤM -->
   <div id="editModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden z-50 px-4">
     <div class="w-full max-w-sm notepad-card p-6 bg-[#fbf9f4]">
       <h2 class="text-2xl font-bold mb-4 text-center border-b border-[#1a1a1a] pb-2">⚙️ Tùy Chỉnh Công Việc</h2>
@@ -206,7 +201,8 @@
     let currentDateState = new Date();
     let currentWeekDays = [];
     let selectedDayIndex = 0;
-    let editingTaskData = null; // Lưu công việc đang sửa
+    let currentTasks = [];
+    let editingTaskId = null;
 
     function initApp() {
       populateMonths();
@@ -310,8 +306,8 @@
       const dateStr = getSelectedDateString();
       try {
         const res = await fetch(`${API_URL}?date=${dateStr}`);
-        const tasks = await res.json();
-        renderTasks(tasks);
+        currentTasks = await res.json();
+        renderTasks(currentTasks);
       } catch (err) {
         document.getElementById('taskList').innerHTML = `
           <li class="text-center text-red-500 py-4 text-xl">❌ Lỗi kết nối Backend!</li>
@@ -321,92 +317,109 @@
 
     function renderTasks(tasks) {
       const listEl = document.getElementById('taskList');
-      if (tasks.length === 0) {
+      if (!tasks || tasks.length === 0) {
         listEl.innerHTML = '<li class="text-center text-gray-400 py-6 text-xl">Chưa có thói quen / công việc nào.</li>';
         return;
       }
 
-      listEl.innerHTML = tasks.map(task => `
-        <li class="flex items-center gap-2 py-2.5 task-row group">
-          <!-- Checkbox -->
-          <div 
-            class="checkbox-custom ${task.isCompleted ? 'checkbox-custom-checked' : ''}" 
-            onclick="toggleTask('${task._id}')"
-          >
-            ${task.isCompleted ? '<i class="fa-solid fa-check text-white text-xs"></i>' : ''}
-          </div>
-          
-          <!-- Nội dung & Hiển thị cờ Ưu tiên 🔴 -->
-          <span 
-            onclick="toggleTask('${task._id}')"
-            class="flex-1 text-xl cursor-pointer select-none ${task.isCompleted ? 'line-through text-gray-400' : 'text-[#1a1a1a]'}"
-          >
-            ${task.priority === 'high' ? '<span class="text-red-600 font-bold mr-1">[🔴 HOT]</span>' : ''}
-            ${task.title}
-          </span>
+      listEl.innerHTML = tasks.map(task => {
+        const id = task._id || task.id;
+        const isHigh = (task.priority === 'high');
+        return `
+          <li class="flex items-center gap-2 py-2.5 task-row group">
+            <div 
+              class="checkbox-custom ${task.isCompleted ? 'checkbox-custom-checked' : ''}" 
+              onclick="toggleTask('${id}')"
+            >
+              ${task.isCompleted ? '<i class="fa-solid fa-check text-white text-xs"></i>' : ''}
+            </div>
+            
+            <span 
+              onclick="toggleTask('${id}')"
+              class="flex-1 text-xl cursor-pointer select-none ${task.isCompleted ? 'line-through text-gray-400' : 'text-[#1a1a1a]'}"
+            >
+              ${isHigh ? '<span class="text-red-600 font-bold mr-1">[🔴 HOT]</span>' : ''}
+              ${escapeText(task.title)}
+            </span>
 
-          <!-- Nút 3 Chấm Dọc (Menu) -->
-          <button 
-            onclick="openEditModal('${task._id}', '${escapeHtml(task.title)}', '${task.date}', '${task.priority}')" 
-            class="text-gray-500 hover:text-black px-2 py-1 transition text-lg"
-            title="Tùy chỉnh"
-          >
-            <i class="fa-solid fa-ellipsis-vertical"></i>
-          </button>
+            <button 
+              onclick="openEditModal('${id}')" 
+              class="text-gray-500 hover:text-black px-2 py-1 transition text-lg"
+              title="Tùy chỉnh"
+            >
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
 
-          <!-- Nút Xóa nhanh -->
-          <button 
-            onclick="deleteTask('${task._id}')" 
-            class="text-gray-400 hover:text-red-600 p-1 transition opacity-70 group-hover:opacity-100"
-            title="Xóa"
-          >
-            <i class="fa-solid fa-trash-can text-sm"></i>
-          </button>
-        </li>
-      `).join('');
+            <button 
+              onclick="deleteTask('${id}')" 
+              class="text-gray-400 hover:text-red-600 p-1 transition opacity-70 group-hover:opacity-100"
+              title="Xóa"
+            >
+              <i class="fa-solid fa-trash-can text-sm"></i>
+            </button>
+          </li>
+        `;
+      }).join('');
     }
 
-    function escapeHtml(str) {
-      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    function escapeText(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    // Mở Modal Popup 3 Chấm
-    function openEditModal(id, title, date, priority) {
-      editingTaskData = { id, date };
-      document.getElementById('modalTitleInput').value = title;
-      document.getElementById('modalPriorityInput').checked = (priority === 'high');
+    function openEditModal(id) {
+      const task = currentTasks.find(t => (t._id || t.id) === id);
+      if (!task) return;
+
+      editingTaskId = id;
+      document.getElementById('modalTitleInput').value = task.title || '';
+      document.getElementById('modalPriorityInput').checked = (task.priority === 'high');
       document.getElementById('editModal').classList.remove('hidden');
     }
 
     function closeEditModal() {
-      editingTaskData = null;
+      editingTaskId = null;
       document.getElementById('editModal').classList.add('hidden');
     }
 
-    // Lưu Chỉnh sửa Tên & Ưu tiên
     async function saveTaskEdit() {
-      if (!editingTaskData) return;
+      if (!editingTaskId) return;
       
       const newTitle = document.getElementById('modalTitleInput').value.trim();
       const isHighPriority = document.getElementById('modalPriorityInput').checked;
 
-      if (!newTitle) return;
+      if (!newTitle) {
+        alert('Tên công việc không được để trống!');
+        return;
+      }
 
-      await fetch(`${API_URL}/${editingTaskData.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          title: newTitle, 
-          date: editingTaskData.date, 
-          priority: isHighPriority ? 'high' : 'normal' 
-        })
-      });
+      const taskObj = currentTasks.find(t => (t._id || t.id) === editingTaskId);
+      const dateStr = taskObj ? taskObj.date : getSelectedDateString();
 
-      closeEditModal();
-      fetchTasks();
+      try {
+        const res = await fetch(`${API_URL}/${editingTaskId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            title: newTitle, 
+            date: dateStr, 
+            priority: isHighPriority ? 'high' : 'normal' 
+          })
+        });
+
+        if (!res.ok) {
+          alert(`Lỗi Server (${res.status}): Không thể cập nhật công việc. Hãy kiểm tra file server.js phía Backend!`);
+          return;
+        }
+
+        closeEditModal();
+        fetchTasks();
+      } catch (err) {
+        alert('Lỗi kết nối tới Server khi lưu!');
+        console.error(err);
+      }
     }
 
-    // Thêm công việc mới
     document.getElementById('taskForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const input = document.getElementById('taskInput');
@@ -415,24 +428,35 @@
 
       const date = getSelectedDateString();
 
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, date, priority: 'normal' })
-      });
-
-      input.value = '';
-      fetchTasks();
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, date, priority: 'normal' })
+        });
+        input.value = '';
+        fetchTasks();
+      } catch (err) {
+        alert('Lỗi khi thêm mới công việc!');
+      }
     });
 
     async function toggleTask(id) {
-      await fetch(`${API_URL}/${id}/toggle`, { method: 'PATCH' });
-      fetchTasks();
+      try {
+        await fetch(`${API_URL}/${id}/toggle`, { method: 'PATCH' });
+        fetchTasks();
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     async function deleteTask(id) {
-      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-      fetchTasks();
+      try {
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        fetchTasks();
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     function isSameDate(d1, d2) {
