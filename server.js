@@ -15,12 +15,12 @@ mongoose.connect(MONGODB_URI)
   .then(() => console.log('✅ Đã kết nối MongoDB thành công!'))
   .catch(err => console.error('❌ Lỗi kết nối MongoDB:', err));
 
-// 1. Cấu trúc dữ liệu Công việc (Schema) - Đã bổ sung 'priority'
+// Cấu trúc dữ liệu Công việc (Schema) - Bổ sung priority
 const taskSchema = new mongoose.Schema({
   title: { type: String, required: true },
   date: { type: String, required: true },
   isCompleted: { type: Boolean, default: false },
-  priority: { type: String, default: 'normal' } // 🔥 Hỗ trợ Ưu tiên (high / normal)
+  priority: { type: String, default: 'normal' }
 }, { timestamps: true });
 
 const Task = mongoose.model('Task', taskSchema);
@@ -73,7 +73,7 @@ app.put('/api/tasks/:id', async (req, res) => {
   }
 });
 
-// 4. Bật/Tắt trạng thái hoàn thành (Check/Uncheck)
+// 4. Bật/Tắt trạng thái hoàn thành
 app.patch('/api/tasks/:id/toggle', async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
@@ -101,8 +101,8 @@ app.delete('/api/tasks/:id', async (req, res) => {
   }
 });
 
-// Trả về trang index.html cho các route còn lại
-app.get('*', (req, res) => {
+// Fallback route cho giao diện Frontend (Tương thích chuẩn Express 5+)
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
