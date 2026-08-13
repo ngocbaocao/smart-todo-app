@@ -97,7 +97,7 @@
       <div class="h-[1.5px] bg-[#1a1a1a] flex-1 max-w-[40px]"></div>
     </div>
 
-    <!-- Tên ứng dụng mới -->
+    <!-- Tên ứng dụng -->
     <h1 class="text-2xl font-bold text-center tracking-[0.1em] mb-4 uppercase text-[#1a1a1a]">
       HABIT & WORK TRACKER
     </h1>
@@ -153,6 +153,51 @@
 
   </div>
 
+  <!-- POPUP CÀI ĐẶT 3 CHẤM (Chỉnh sửa tên & Đánh dấu Ưu tiên) -->
+  <div id="editModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden z-50 px-4">
+    <div class="w-full max-w-sm notepad-card p-6 bg-[#fbf9f4]">
+      <h2 class="text-2xl font-bold mb-4 text-center border-b border-[#1a1a1a] pb-2">⚙️ Tùy Chỉnh Công Việc</h2>
+      
+      <!-- 1. ✏️ Chỉnh sửa tên công việc/thói quen -->
+      <div class="mb-4">
+        <label class="block text-lg font-bold mb-1">✏️ Tên công việc / thói quen:</label>
+        <input 
+          type="text" 
+          id="modalTitleInput" 
+          class="w-full px-3 py-1.5 bg-transparent border-2 border-[#1a1a1a] rounded-lg text-xl focus:outline-none"
+        />
+      </div>
+
+      <!-- 2. 🔥 Đánh dấu Ưu tiên (Priority Flag 🔴) -->
+      <div class="mb-6 flex items-center gap-3 bg-[#f3efe6] p-3 rounded-lg border border-[#1a1a1a]">
+        <input 
+          type="checkbox" 
+          id="modalPriorityInput" 
+          class="w-5 h-5 accent-[#1a1a1a] cursor-pointer"
+        />
+        <label for="modalPriorityInput" class="text-lg font-bold cursor-pointer select-none">
+          🔥 Đánh dấu Ưu tiên (Priority 🔴)
+        </label>
+      </div>
+
+      <!-- Nút thao tác -->
+      <div class="flex justify-end gap-2 pt-2 border-t border-[#1a1a1a]">
+        <button 
+          onclick="closeEditModal()" 
+          class="px-4 py-1 border-2 border-gray-400 text-gray-600 rounded-lg text-lg font-bold hover:bg-gray-200 transition"
+        >
+          Hủy
+        </button>
+        <button 
+          onclick="saveTaskEdit()" 
+          class="px-5 py-1 border-2 border-[#1a1a1a] bg-[#1a1a1a] text-[#fbf9f4] rounded-lg text-lg font-bold hover:opacity-90 transition"
+        >
+          Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = '/api/tasks';
     const dayNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
@@ -161,6 +206,7 @@
     let currentDateState = new Date();
     let currentWeekDays = [];
     let selectedDayIndex = 0;
+    let editingTaskData = null; // Lưu công việc đang sửa
 
     function initApp() {
       populateMonths();
@@ -281,7 +327,8 @@
       }
 
       listEl.innerHTML = tasks.map(task => `
-        <li class="flex items-center gap-3 py-2.5 task-row group">
+        <li class="flex items-center gap-2 py-2.5 task-row group">
+          <!-- Checkbox -->
           <div 
             class="checkbox-custom ${task.isCompleted ? 'checkbox-custom-checked' : ''}" 
             onclick="toggleTask('${task._id}')"
@@ -289,13 +336,25 @@
             ${task.isCompleted ? '<i class="fa-solid fa-check text-white text-xs"></i>' : ''}
           </div>
           
+          <!-- Nội dung & Hiển thị cờ Ưu tiên 🔴 -->
           <span 
             onclick="toggleTask('${task._id}')"
             class="flex-1 text-xl cursor-pointer select-none ${task.isCompleted ? 'line-through text-gray-400' : 'text-[#1a1a1a]'}"
           >
+            ${task.priority === 'high' ? '<span class="text-red-600 font-bold mr-1">[🔴 HOT]</span>' : ''}
             ${task.title}
           </span>
 
+          <!-- Nút 3 Chấm Dọc (Menu) -->
+          <button 
+            onclick="openEditModal('${task._id}', '${escapeHtml(task.title)}', '${task.date}', '${task.priority}')" 
+            class="text-gray-500 hover:text-black px-2 py-1 transition text-lg"
+            title="Tùy chỉnh"
+          >
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+
+          <!-- Nút Xóa nhanh -->
           <button 
             onclick="deleteTask('${task._id}')" 
             class="text-gray-400 hover:text-red-600 p-1 transition opacity-70 group-hover:opacity-100"
@@ -307,6 +366,47 @@
       `).join('');
     }
 
+    function escapeHtml(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // Mở Modal Popup 3 Chấm
+    function openEditModal(id, title, date, priority) {
+      editingTaskData = { id, date };
+      document.getElementById('modalTitleInput').value = title;
+      document.getElementById('modalPriorityInput').checked = (priority === 'high');
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      editingTaskData = null;
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    // Lưu Chỉnh sửa Tên & Ưu tiên
+    async function saveTaskEdit() {
+      if (!editingTaskData) return;
+      
+      const newTitle = document.getElementById('modalTitleInput').value.trim();
+      const isHighPriority = document.getElementById('modalPriorityInput').checked;
+
+      if (!newTitle) return;
+
+      await fetch(`${API_URL}/${editingTaskData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title: newTitle, 
+          date: editingTaskData.date, 
+          priority: isHighPriority ? 'high' : 'normal' 
+        })
+      });
+
+      closeEditModal();
+      fetchTasks();
+    }
+
+    // Thêm công việc mới
     document.getElementById('taskForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const input = document.getElementById('taskInput');
@@ -318,7 +418,7 @@
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, date })
+        body: JSON.stringify({ title, date, priority: 'normal' })
       });
 
       input.value = '';
